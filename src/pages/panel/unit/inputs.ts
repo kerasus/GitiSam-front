@@ -1,0 +1,110 @@
+import { shallowRef } from 'vue';
+import { unitTypeOptions } from 'src/repositories/unit';
+import FormBuilderCurrencyInput from 'components/controls/formBuilderCustomInput/FormBuilderCurrencyInput.vue';
+
+const FormBuilderCurrencyInputComponent = shallowRef(FormBuilderCurrencyInput);
+
+export default () => [
+  {
+    type: 'hidden',
+    name: 'id',
+    responseKey: 'id',
+  },
+  {
+    type: 'hidden',
+    name: 'building_id',
+    responseKey: 'building_id',
+  },
+  // {
+  //   type: 'select',
+  //   name: 'building_id',
+  //   responseKey: 'building_id',
+  //   label: 'ساختمان',
+  //   options: [],
+  //   optionValue: 'id',
+  //   optionLabel: 'name',
+  //   placeholder: ' ',
+  //   col: 'col-md-4 col-12',
+  // },
+  {
+    type: 'select',
+    name: 'type',
+    responseKey: 'type',
+    label: 'نوع واحد',
+    options: unitTypeOptions,
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'input',
+    name: 'floor',
+    responseKey: 'floor',
+    label: 'طبقه',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: FormBuilderCurrencyInputComponent,
+    name: 'resident_base_balance',
+    responseKey: 'resident_base_balance',
+    label: 'تراز مالی اولیه ساکن',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: FormBuilderCurrencyInputComponent,
+    name: 'owner_base_balance',
+    responseKey: 'owner_base_balance',
+    label: 'تراز مالی اولیه مالک',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'input',
+    name: 'unit_number',
+    responseKey: 'unit_number',
+    label: 'شماره واحد',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'input',
+    name: 'area',
+    responseKey: 'area',
+    label: 'مساحت',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'input',
+    name: 'number_of_residents',
+    responseKey: 'number_of_residents',
+    label: 'تعداد ساکنین',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'input',
+    name: 'number_of_rooms',
+    responseKey: 'number_of_rooms',
+    label: 'تعداد اتاق‌ها',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'input',
+    name: 'parking_spaces',
+    responseKey: 'parking_spaces',
+    label: 'فضای پارکینگ',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'inputEditor',
+    name: 'description',
+    responseKey: 'description',
+    label: 'توضیحات',
+    placeholder: ' ',
+    col: 'col-md-12 col-12',
+  },
+]

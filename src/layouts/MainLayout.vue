@@ -1,102 +1,204 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+  <q-layout class="main-layout" :view="appLayoutStore.layoutView">
+    <q-no-ssr>
+      <q-header
+        v-if="appLayoutStore.layoutHeader"
+        :reveal="appLayoutStore.layoutHeaderReveal"
+        :elevated="appLayoutStore.layoutHeaderElevated"
+        :bordered="appLayoutStore.layoutHeaderBordered"
+        :class="appLayoutStore.headerCustomClass"
+      >
+        <header-component :floated="headerFloated" />
+      </q-header>
 
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
+      <q-drawer
+        v-if="appLayoutStore.layoutLeftDrawer"
+        v-model="appLayoutStore.layoutLeftDrawerVisible"
+        :overlay="appLayoutStore.layoutLeftDrawerOverlay"
+        :elevated="appLayoutStore.layoutLeftDrawerElevated"
+        :bordered="appLayoutStore.layoutLeftDrawerBordered"
+        :class="appLayoutStore.layoutLeftDrawerCustomClass"
+        :mini="appLayoutStore.layoutLeftDrawerMini"
+        :mini-width="appLayoutStore.layoutLeftDrawerMiniWidth"
+        :mini-to-overlay="appLayoutStore.layoutLeftDrawerMiniToOverlay"
+        :behavior="appLayoutStore.layoutLeftDrawerBehavior"
+        :width="appLayoutStore.layoutLeftDrawerWidth"
+        :show-if-above="appLayoutStore.layoutLeftDrawerShowIfAbove"
+        side="left"
+        class="main-layout__left-drawer"
+      >
+        <left-drawer-component />
+      </q-drawer>
 
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
-    </q-header>
+      <q-drawer
+        v-if="appLayoutStore.layoutRightDrawer"
+        v-model="appLayoutStore.layoutRightDrawerVisible"
+        :overlay="appLayoutStore.layoutRightDrawerOverlay"
+        :elevated="appLayoutStore.layoutRightDrawerElevated"
+        :bordered="appLayoutStore.layoutRightDrawerBordered"
+        :class="appLayoutStore.rightDrawerCustomClass"
+        :behavior="appLayoutStore.layoutRightDrawerBehavior"
+        :width="appLayoutStore.rightDrawerWidth"
+        :show-if-above="appLayoutStore.layoutRightDrawerShowIfAbove"
+        side="right"
+        class="main-layout__right-drawer"
+      >
+        <right-drawer-component />
+      </q-drawer>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+      <q-page-container>
+        <q-page v-scroll="onContentInsideScroll" :style-fn="myTweak">
+          <router-view />
+        </q-page>
+      </q-page-container>
 
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
-    </q-drawer>
-
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+      <q-footer
+        v-if="appLayoutStore.layoutFooter"
+        ref="footerRef"
+        :reveal="appLayoutStore.layoutFooterReveal"
+        :elevated="appLayoutStore.layoutFooterElevated"
+        :bordered="appLayoutStore.layoutFooterBordered"
+        :class="appLayoutStore.footerCustomClass"
+      >
+        <footer-component />
+      </q-footer>
+    </q-no-ssr>
   </q-layout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import { useQuasar } from 'quasar';
+import { useAppLayout } from 'src/stores/appLayout';
+import footerComponent from 'src/components/template/footers/index.vue';
+import headerComponent from 'src/components/template/headers/index.vue';
+import leftDrawerComponent from 'src/components/template/leftDrawers/index.vue';
+import rightDrawerComponent from 'src/components/template/rightDrawers/index.vue';
+import { onMounted, onUnmounted, ref, watch, type ComponentPublicInstance } from 'vue';
 
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-];
+defineOptions({
+  name: 'MainLayout',
+});
 
-const leftDrawerOpen = ref(false);
+const $q = useQuasar();
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+const footerRef = ref<ComponentPublicInstance | null>(null);
+const headerFloated = ref<boolean>(false);
+
+const appLayoutStore = useAppLayout();
+
+function myTweak(offset: number) {
+  appLayoutStore.layoutPageOffset = offset;
+  // "offset" is a Number (pixels) that refers to the total
+  // height of header + footers that occupies on screen,
+  // based on the QLayout "view" prop configuration
+
+  // this is actually what the default style-fn does in Quasar
+  return { minHeight: offset ? `calc(100vh - ${offset}px)` : '100vh' };
 }
+
+function onContentInsideScroll(data: number) {
+  headerFloated.value = data > 0;
+}
+
+function showAxiosInterceptorsResponseError(event: CustomEvent) {
+  const messages: string[] = [];
+  const message: string | { loc: string; type: string }[] = event.detail.message;
+  if (typeof message === 'string') {
+    messages.push(message);
+  } else {
+    message.forEach((item: { loc: string; type: string }) => {
+      messages.push(item.type);
+    });
+  }
+
+  const joinedMessages = messages.join('</br>');
+
+  $q.notify({
+    classes: 'snack--negative snack--inline-action',
+    icon: 'info',
+    message: joinedMessages,
+    html: true,
+    multiLine: true,
+    timeout: 20000,
+    actions: [
+      {
+        icon: 'close',
+        class: 'icon-button',
+        handler: () => {
+          /* ... */
+        },
+      },
+    ],
+  });
+}
+
+watch(()=>$q.screen.lt.md, (ltmd) => {
+  if (ltmd) {
+    appLayoutStore.layoutLeftDrawerMini = false;
+    appLayoutStore.layoutLeftDrawerVisible = false;
+  } else {
+    appLayoutStore.layoutLeftDrawerMini = false;
+    appLayoutStore.layoutLeftDrawerVisible = true;
+  }
+}, {
+  immediate: true
+})
+
+onMounted(() => {
+  // Add an event listener when the component is mounted
+  window.addEventListener(
+    'axios-interceptors-response-error',
+    showAxiosInterceptorsResponseError as EventListener,
+  );
+
+  setTimeout(() => {
+    if (footerRef.value) {
+      appLayoutStore.layoutFooterHeight = footerRef.value.$el.clientHeight;
+    }
+  }, 500);
+});
+
+onUnmounted(() => {
+  // Clean up the event listener when the component is unmounted
+  window.removeEventListener(
+    'axios-interceptors-response-error',
+    showAxiosInterceptorsResponseError as EventListener,
+  );
+});
 </script>
+
+<style lang="scss" scoped>
+.main-layout {
+  background: $color-background;
+  min-height: 100vh;
+  :deep(.q-drawer-container) {
+    .q-drawer--right {
+      .q-layout__shadow {
+        &:after {
+          box-shadow:
+            0 0 10px 2px rgba(0, 0, 0, 0),
+            0 0 10px rgba(53, 84, 209, 0.24);
+        }
+      }
+    }
+    .q-drawer--left {
+      z-index: 2001;
+      .q-layout__shadow {
+        &:after {
+          box-shadow:
+            0 0 10px 2px rgba(255, 255, 255, 0.2),
+            0 0 10px rgba(53, 84, 209, 0.24);
+        }
+      }
+    }
+  }
+  :deep(.q-layout__section--marginal) {
+    background: transparent;
+  }
+  .q-page {
+    display: flex;
+    flex-direction: column;
+    padding: $space-4;
+  }
+}
+</style>
