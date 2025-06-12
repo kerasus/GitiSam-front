@@ -17,7 +17,7 @@ export default class SMSAPI extends BaseAPI<SMSType> {
     this.endpoints = {
       ...this.endpoints,
       accountBalance: `${this.baseEndpoint}/account-balance`,
-      sendMonthlyDebtReminders: `${this.baseEndpoint}/send-monthly-debt-reminders`
+      sendDebtNotice: (targetGroup: 'resident' | 'owner') => `${this.baseEndpoint}/send-debt-notice/${targetGroup}`
     }
   }
 
@@ -35,10 +35,10 @@ export default class SMSAPI extends BaseAPI<SMSType> {
     }
   }
 
-  async sendMonthlyDebtReminders(): Promise<SMSType> {
+  async sendDebtNotice(targetGroup: 'resident' | 'owner'): Promise<SMSType> {
     try {
       const response: AxiosResponse<SMSType> = await this.getAxiosInstanceWithToken()
-        .post(this.endpoints.sendMonthlyDebtReminders);
+        .post(this.endpoints.sendDebtNotice(targetGroup));
       return response.data;
     } catch (error) {
       if (error instanceof Error) {
