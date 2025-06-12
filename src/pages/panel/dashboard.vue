@@ -85,6 +85,12 @@
       </template>
     </template>
   </entity-index>
+
+  <q-separator class="q-my-md" />
+
+  <div v-if="userManager.isManager" class="flex justify-center items-center">
+    <q-btn color="primary" label="backup" :loading="backupDBLoading" @click="backupDB" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -93,6 +99,7 @@ import SMSAPI from 'src/repositories/sms';
 import { useUser } from 'src/stores/user';
 import { EntityIndex } from 'quasar-crud';
 import { useDate } from 'src/composables/Date';
+import DatabaseAPI from 'src/repositories/database';
 import BuildingAPI from 'src/repositories/building';
 import { useAppConfig } from 'src/stores/appConfig';
 import { useBuildingStore } from 'src/stores/building';
@@ -105,11 +112,13 @@ const smsAPI = new SMSAPI();
 const userManager = useUser();
 const dateManager = useDate();
 const unitAPI = new UnitAPI();
+const databaseAPI = new DatabaseAPI();
 const buildingAPI = new BuildingAPI();
 const appConfigManager = useAppConfig();
 const buildingStore = useBuildingStore();
 
 const buildingData = ref();
+const backupDBLoading = ref(false);
 const sendMonthlyDebtRemindersLoading = ref(false);
 const smsAccountBalance = ref<number | null>(null);
 const api = ref(unitAPI.endpoints.base);
@@ -260,6 +269,15 @@ async function sendMonthlyDebtReminders () {
   } finally {
     sendMonthlyDebtRemindersLoading.value = false
     await getSMSAccountBalance()
+  }
+}
+
+async function backupDB() {
+  backupDBLoading.value = true;
+  try {
+    await databaseAPI.backup()
+  } finally {
+    backupDBLoading.value = false;
   }
 }
 
