@@ -19,11 +19,23 @@
                            :number="smsAccountBalance"
                            show-status-color />
       </div>
-      <div v-if="userManager.isManager || userManager.isAccountant" class="col-md-3 flex justify-center items-center">
-        <q-btn color="primary" :loading="sendMonthlyDebtRemindersLoading"
-               @click="sendMonthlyDebtReminders">
-          ارسال پیامک اعلان شارژ ماهیانه
-        </q-btn>
+      <div v-if="userManager.isManager" class="col-md-3 flex justify-center items-center">
+        <q-card>
+          <q-card-section>
+            اطلاع رسانی پیامکی بدهی به بدهکاران
+          </q-card-section>
+          <q-card-section class="text-center">
+            <q-btn color="primary" :loading="sendDebtSMSForOwnersLoading"
+                   @click="sendDebtSMSForOwners">
+              مالکین
+            </q-btn>
+            <q-separator class="q-my-md" />
+            <q-btn color="primary" :loading="sendDebtSMSForResidentsLoading"
+                   @click="sendDebtSMSForResidents">
+              ساکنین
+            </q-btn>
+          </q-card-section>
+        </q-card>
       </div>
     </div>
     <div class="row q-col-gutter-md q-mt-md justify-center">
@@ -119,9 +131,10 @@ const buildingStore = useBuildingStore();
 
 const buildingData = ref();
 const backupDBLoading = ref(false);
-const sendMonthlyDebtRemindersLoading = ref(false);
+const sendDebtSMSForOwnersLoading = ref(false);
+const sendDebtSMSForResidentsLoading = ref(false);
 const smsAccountBalance = ref<number | null>(null);
-const api = ref(unitAPI.endpoints.base);
+const api = ref(unitAPI.endpoints.publicIndex);
 const label = ref('واحد های بدهکار');
 const showRouteName = ref('Panel.Unit.Show');
 const itemIdentifyKey = ref('id');
@@ -237,16 +250,6 @@ const inputs = ref([
   },
   {
     type: 'hidden',
-    name: 'sortation_field',
-    value: 'created_at'
-  },
-  {
-    type: 'hidden',
-    name: 'sortation_order',
-    value: 'desc'
-  },
-  {
-    type: 'hidden',
     name: 'length',
     value: 30
   },
@@ -262,12 +265,22 @@ async function getSMSAccountBalance () {
   smsAccountBalance.value = smsAccountBalanceResult.balance
 }
 
-async function sendMonthlyDebtReminders () {
+async function sendDebtSMSForOwners () {
   try {
-    sendMonthlyDebtRemindersLoading.value = true
-    await smsAPI.sendMonthlyDebtReminders()
+    sendDebtSMSForOwnersLoading.value = true
+    await smsAPI.sendDebtNotice('owner')
   } finally {
-    sendMonthlyDebtRemindersLoading.value = false
+    sendDebtSMSForOwnersLoading.value = false
+    await getSMSAccountBalance()
+  }
+}
+
+async function sendDebtSMSForResidents () {
+  try {
+    sendDebtSMSForResidentsLoading.value = true
+    await smsAPI.sendDebtNotice('resident')
+  } finally {
+    sendDebtSMSForResidentsLoading.value = false
     await getSMSAccountBalance()
   }
 }
