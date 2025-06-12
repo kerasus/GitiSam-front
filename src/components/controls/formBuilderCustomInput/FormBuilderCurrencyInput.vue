@@ -247,7 +247,7 @@ function submitInput () {
 }
 
 watch(() => props.value, (value) => {
-  formattedValue.value = value.toString();
+  formattedValue.value = (value || 0).toString();
 })
 </script>
 
