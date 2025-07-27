@@ -198,7 +198,7 @@ function setConfirmationMessage (type: ConfirmationType) {
             {{ user.mobile }}
           </q-item-label>
         </q-item-section>
-        <q-item-section v-if="userManager.isManager"
+        <q-item-section v-if="(userManager.isManager || userManager.isAccountant)"
                         side>
           <div class="actions-on-user text-grey-8">
             <template v-if="!editMode">
@@ -214,7 +214,7 @@ function setConfirmationMessage (type: ConfirmationType) {
                      color="grey"
                      icon="img:/images/icons/sms-auth.png"
                      @click="sendSMSConfirmation(user.id ,'auth')"/>
-              <q-btn v-if="userManager.isManager && user.id"
+              <q-btn v-if="(userManager.isManager || userManager.isAccountant) && user.id"
                      flat
                      round
                      color="grey"
