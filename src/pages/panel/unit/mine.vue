@@ -527,12 +527,26 @@ async function getMyUnits () {
     length: 10
   })
 
-  if (unitsList.data[0]) {
-    userUnit.value = unitsList.data[0]
+  const myOwnerUnits = getMyOwnerUnits(unitsList.data)
+  console.log(myOwnerUnits)
+  const myResidentUnits = getMyResidentUnits(unitsList.data)
+
+  if (myResidentUnits[0]) {
+    userUnit.value = myResidentUnits[0]
     if (userUnit.value?.id) {
       setUnitId(userUnit.value.id)
     }
   }
+}
+
+function getMyOwnerUnits (units: UnitType[]) {
+  const myId = userManager.me?.id
+  return units.filter(unit => !!unit.owners.find(user=>user.id === myId))
+}
+
+function getMyResidentUnits (units: UnitType[]) {
+  const myId = userManager.me?.id
+  return units.filter(unit => !!unit.residents.find(user=>user.id === myId))
 }
 
 function setUnitId (newUnitId: number) {
