@@ -178,8 +178,7 @@ import {
 } from 'src/repositories/invoice';
 import InvoiceDistributionAPI, {
   type InvoiceDistributionType,
-  invoiceDistributionMethodOptions,
-  invoiceDistributionStatusOptions
+  invoiceDistributionMethodOptions
 } from 'src/repositories/invoiceDistribution';
 
 const $q = useQuasar();
@@ -267,20 +266,20 @@ const invoiceDistributionIndexTable = ref({
       align: 'left',
       field: (row: InvoiceDistributionType) => row.invoice?.is_covered_by_monthly_charge,
     },
-    {
-      name: 'current_balance',
-      required: true,
-      label: `مقدار پرداخت نشده (${appConfig.currencyUnit})`,
-      align: 'left',
-      field: (row: InvoiceDistributionType) => (row.current_balance || 0) * -1,
-    },
-    {
-      name: 'status_label',
-      required: true,
-      label: 'وضعیت',
-      align: 'left',
-      field: (row: InvoiceDistributionType) => row.status_label,
-    },
+    // {
+    //   name: 'current_balance',
+    //   required: true,
+    //   label: `مقدار پرداخت نشده (${appConfig.currencyUnit})`,
+    //   align: 'left',
+    //   field: (row: InvoiceDistributionType) => (row.current_balance || 0) * -1,
+    // },
+    // {
+    //   name: 'status_label',
+    //   required: true,
+    //   label: 'وضعیت',
+    //   align: 'left',
+    //   field: (row: InvoiceDistributionType) => row.status_label,
+    // },
     {
       name: 'created_at',
       required: true,
@@ -321,28 +320,9 @@ const invoiceDistributionIndexInputs = ref([
     value: unitId.value
   },
   {
-    type: 'select',
-    name: 'invoiceTargetGroup',
-    responseKey: 'invoiceTargetGroup',
-    label: 'پرداخت کننده',
-    options: invoiceTargetGroupOptions,
-    placeholder: ' ',
-    col: 'col-md-3 col-12',
-  },
-  {
-    type: 'select',
-    name: 'status',
-    label: 'وضعیت',
-    options: invoiceDistributionStatusOptions,
-    placeholder: ' ',
-    col: 'col-md-3 col-12',
-  },
-  {
-    type: 'select',
-    name: 'distribution_method',
-    responseKey: 'distribution_method',
-    label: 'روش توزیع',
-    options: invoiceDistributionMethodOptions,
+    type: 'input',
+    name: 'invoiceTitle',
+    label: 'عنوان فاکتور',
     placeholder: ' ',
     col: 'col-md-3 col-12',
   },
@@ -353,6 +333,24 @@ const invoiceDistributionIndexInputs = ref([
     options: [],
     optionLabel: 'name',
     optionValue: 'id',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'select',
+    name: 'invoiceTargetGroup',
+    responseKey: 'invoiceTargetGroup',
+    label: 'پرداخت کننده',
+    options: invoiceTargetGroupOptions,
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'select',
+    name: 'distribution_method',
+    responseKey: 'distribution_method',
+    label: 'روش توزیع',
+    options: invoiceDistributionMethodOptions,
     placeholder: ' ',
     col: 'col-md-3 col-12',
   }
