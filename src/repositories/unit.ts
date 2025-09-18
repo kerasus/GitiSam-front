@@ -144,14 +144,18 @@ export default class UnitAPI extends BaseAPI<UnitType> {
     }
   }
 
-  async sendDebtSMS(unitId: number, targetGroup: 'resident' | 'owner'): Promise<UnitType> {
-    try {
-      const response: AxiosResponse<UnitType> = await this.getAxiosInstanceWithToken()
-        .post(this.endpoints.sendDebtSMS(unitId, targetGroup));
-      return response.data;
-    } catch (error: any) {
-      throw error.response.data;
+  async sendDebtSMS(unitId: number, targetGroup: 'resident' | 'owner', amount?: number): Promise<UnitType> {
+    const params: {
+      amount: number | null
+    } = {
+      amount: null
     }
+    if (amount && !isNaN(amount)) {
+      params.amount = amount
+    }
+    const response: AxiosResponse<UnitType> = await this.getAxiosInstanceWithToken()
+      .post(this.endpoints.sendDebtSMS(unitId, targetGroup), {}, { params });
+    return response.data;
   }
 
   async sendLoginInfo(unitId: number, userId: number): Promise<UnitType> {

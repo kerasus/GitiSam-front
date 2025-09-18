@@ -24,6 +24,8 @@ const unitAPI = new UnitAPI();
 
 let confirmationType: ConfirmationType = 'auth';
 const sendSMSLoading = ref(false);
+const sendSMSWithAmount = ref(false);
+const debtAmountSMS = ref(null);
 const showSMSDialog = ref(false);
 const confirmationMessage: Ref<string | null> = ref(null);
 const selectedUserToSendSMS = ref<number | null>(null);
@@ -83,11 +85,12 @@ function callResidentPhoneNumber(phoneNumber: string) {
   }
 }
 
-function sendSMSConfirmation(userId: number, type: ConfirmationType) {
-  setConfirmationMessage(type)
+function sendSMSConfirmation(userId: number, type: ConfirmationType, withAmount?: boolean) {
   confirmationType = type
   showSMSDialog.value = true
   selectedUserToSendSMS.value = userId;
+  sendSMSWithAmount.value = !!withAmount;
+  setConfirmationMessage(type)
 }
 
 function hideDialog() {
@@ -110,7 +113,8 @@ function onsubmitSendSMS() {
 function sendDebtSMS (unitId: number) {
   sendSMSLoading.value = true;
   const targetGroup = confirmationType === 'debt-owner' ? 'owner' : 'resident';
-  unitAPI.sendDebtSMS(unitId, targetGroup)
+  const amount = sendSMSWithAmount.value && debtAmountSMS.value && !isNaN(debtAmountSMS.value) ? debtAmountSMS.value : undefined
+  unitAPI.sendDebtSMS(unitId, targetGroup, amount)
     .then(() => {
       $q.notify({
         message: 'پیامک با موفقیت ارسال شد.',
@@ -201,33 +205,47 @@ function setConfirmationMessage (type: ConfirmationType) {
         <q-item-section v-if="(userManager.isManager || userManager.isAccountant)"
                         side>
           <div class="actions-on-user text-grey-8">
-            <template v-if="!editMode">
-              <q-btn v-if="user.mobile"
-                     flat
-                     color="grey"
-                     icon="call"
-                     class="btn-call-user"
-                     @click="callResidentPhoneNumber(user.mobile)"  />
-              <q-btn v-if="userManager.isManager && user.id"
-                     flat
-                     round
-                     color="grey"
-                     icon="img:/images/icons/sms-auth.png"
-                     @click="sendSMSConfirmation(user.id ,'auth')"/>
-              <q-btn v-if="(userManager.isManager || userManager.isAccountant) && user.id"
-                     flat
-                     round
-                     color="grey"
-                     icon="img:/images/icons/sms-debt.png"
-                     @click="sendSMSConfirmation(user.id, userRole === 'resident' ? 'debt-resident' : 'debt-owner')"/>
-              <q-btn v-if="userManager.isManager"
-                     flat
-                     round
-                     icon="visibility"
-                     color="grey"
-                     :to="{ name: 'Panel.User.Show', params: {id: user.id}}"
-              />
-            </template>
+            <div v-if="!editMode">
+              <div>
+                <q-btn v-if="user.mobile"
+                       flat
+                       color="grey"
+                       icon="call"
+                       class="btn-call-user"
+                       @click="callResidentPhoneNumber(user.mobile)"  />
+                <q-btn v-if="userManager.isManager && user.id"
+                       flat
+                       round
+                       color="grey"
+                       icon="img:/images/icons/sms-auth.png"
+                       @click="sendSMSConfirmation(user.id ,'auth')"/>
+                <q-btn v-if="(userManager.isManager || userManager.isAccountant) && user.id"
+                       flat
+                       round
+                       color="grey"
+                       icon="img:/images/icons/sms-debt.png"
+                       @click="sendSMSConfirmation(user.id, userRole === 'resident' ? 'debt-resident' : 'debt-owner')"/>
+                <q-btn v-if="userManager.isManager"
+                       flat
+                       round
+                       icon="visibility"
+                       color="grey"
+                       :to="{ name: 'Panel.User.Show', params: {id: user.id}}"
+                />
+              </div>
+              <q-input v-if="(userManager.isManager || userManager.isAccountant) && user.id"
+                       v-model="debtAmountSMS"
+                       type="number"
+                       label="مقدار">
+                <template #append>
+                  <q-btn flat
+                         round
+                         color="grey"
+                         icon="img:/images/icons/sms-debt.png"
+                         @click="sendSMSConfirmation(user.id, userRole === 'resident' ? 'debt-resident' : 'debt-owner', true)"/>
+                </template>
+              </q-input>
+            </div>
 
             <delete-btn v-if="userManager.isManager && editMode"
                         :row="user"
