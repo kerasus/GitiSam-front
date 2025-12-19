@@ -76,9 +76,24 @@ export default class InvoiceAPI extends BaseAPI<InvoiceType> {
     // Override the endpoints
     this.endpoints = {
       ...this.endpoints,
+      totalExpensesByCategory: `${this.baseEndpoint}/total-expenses-by-category`,
       attachImageToInvoice: (invoiceId: number) => `${this.baseEndpoint}/${invoiceId}/attach-image`,
       detachImageFromInvoice: (invoiceId: number, imageId: number) => `${this.baseEndpoint}/${invoiceId}/detach-image/${imageId}`
     }
+  }
+
+  async getTotalExpensesByCategory(): Promise<{
+    category_name: string
+    total_paid_amount: number
+    total_amount: number
+  }[]> {
+    const response: AxiosResponse<{
+      category_name: string
+      total_paid_amount: number
+      total_amount: number
+    }[]> = await this.getAxiosInstanceWithToken()
+      .get(this.endpoints.totalExpensesByCategory);
+    return response.data;
   }
 
   async attachImageToInvoice(invoiceId: number, formData: FormData): Promise<UnitType> {

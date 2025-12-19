@@ -102,6 +102,10 @@ const tabs = ref([
     label: 'فاکتورها',
   },
   {
+    name: 'monthlyReport',
+    label: 'ریز هزینه های شارژ',
+  },
+  {
     name: 'transactions',
     label: 'تراکنش ها',
   },

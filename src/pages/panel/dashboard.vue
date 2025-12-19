@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <div class="row q-col-gutter-md justify-center">
-      <div class="col-md-3">
+      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!buildingData" height="150px" />
         <dashboard-card-2 v-else
                            title="تراز مالی ساختمان"
@@ -10,7 +10,7 @@
                            :number="buildingData.current_balance"
                            show-status-color />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!smsAccountBalance" height="150px" />
         <dashboard-card-2 v-else
                            title="شارژ پنل پیامکی"
@@ -19,8 +19,12 @@
                            :number="smsAccountBalance"
                            show-status-color />
       </div>
-      <div v-if="userManager.isManager" class="col-md-3 flex justify-center items-center">
-        <q-card>
+      <div class="col-md-3 col-xs-12">
+        <pie-chart v-if="invoiceCategoryDate.length > 0" title="هزینه ها"
+        :data="invoiceCategoryDate"/>
+      </div>
+      <div v-if="userManager.isManager" class="col-md-3 col-xs-12 flex justify-center items-center">
+        <q-card class="full-width">
           <q-card-section>
             اطلاع رسانی پیامکی بدهی به بدهکاران
           </q-card-section>
@@ -39,19 +43,19 @@
       </div>
     </div>
     <div class="row q-col-gutter-md q-mt-md justify-center">
-      <div class="col-md-3">
+      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!buildingData" height="150px" />
         <dashboard-card v-else title="تراز اولیه ساختمان" icon="account_balance" :number="buildingData.base_balance" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!buildingData" height="150px" />
         <dashboard-card v-else title="درآمد ساختمان" icon="account_balance" :number="buildingData.total_income" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!buildingData" height="150px" />
         <dashboard-card v-else title="جمع کل هزینه های ساختمان" icon="receipt_long" :number="buildingData.total_debt" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!buildingData" height="150px" />
         <dashboard-card v-else title="جمع کل پرداختی های ساختمان" icon="payments" :number="buildingData.paid_amount" />
       </div>
@@ -115,16 +119,19 @@ import DatabaseAPI from 'src/repositories/database';
 import BuildingAPI from 'src/repositories/building';
 import { useAppConfig } from 'src/stores/appConfig';
 import { useBuildingStore } from 'src/stores/building';
+import PieChart from 'src/components/Chart/PieChart.vue';
 import DashboardCard from 'src/components/DashBoardCard.vue';
 import DashboardCard2 from 'src/components/DashBoardCard2.vue';
 import CurrencyNumber from 'src/components/CurrencyNumber.vue';
 import UnitAPI, { type UnitType, getUnitUserFullname } from 'src/repositories/unit';
+import InvoiceAPI from 'src/repositories/invoice';
 
 const smsAPI = new SMSAPI();
 const userManager = useUser();
 const dateManager = useDate();
 const unitAPI = new UnitAPI();
 const databaseAPI = new DatabaseAPI();
+const invoiceAPI = new InvoiceAPI();
 const buildingAPI = new BuildingAPI();
 const appConfigManager = useAppConfig();
 const buildingStore = useBuildingStore();
@@ -139,6 +146,10 @@ const label = ref('واحد های بدهکار');
 const showRouteName = ref('Panel.Unit.Show');
 const itemIdentifyKey = ref('id');
 
+const invoiceCategoryDate = ref<{
+  value: number,
+  name: string,
+}[]>([]);
 const tableKeys = ref({
   data: 'data',
   total: 'total',
@@ -294,8 +305,19 @@ async function backupDB() {
   }
 }
 
-onMounted(async ()=>{
-  await loadBuildingData()
-  await getSMSAccountBalance()
+async function getTotalExpensesByCategory () {
+  const totalExpensesByCategory = await invoiceAPI.getTotalExpensesByCategory()
+  invoiceCategoryDate.value = totalExpensesByCategory.map(i=>{
+    return {
+      value: i.total_paid_amount,
+      name: i.category_name
+    }
+  })
+}
+
+onMounted(()=> {
+  loadBuildingData()
+  getSMSAccountBalance()
+  getTotalExpensesByCategory()
 })
 </script>
