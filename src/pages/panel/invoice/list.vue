@@ -144,7 +144,7 @@ const inputs = ref([
   {
     type: 'hidden',
     name: 'sortation_field',
-    value: 'created_at'
+    value: 'due_date'
   },
   {
     type: 'hidden',
@@ -158,7 +158,7 @@ const inputs = ref([
     label: 'پرداخت کننده',
     options: invoiceTargetGroupOptions,
     placeholder: ' ',
-    col: 'col-md-4 col-12',
+    col: 'col-md-3 col-12',
   },
   {
     type: 'select',
@@ -168,14 +168,21 @@ const inputs = ref([
     optionValue: 'id',
     optionLabel: 'name',
     placeholder: ' ',
-    col: 'col-md-4 col-12',
+    col: 'col-md-3 col-12',
   },
   {
     type: 'input',
     name: 'title',
     label: 'عنوان فاکتور',
     placeholder: ' ',
-    col: 'col-md-4 col-12',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'date',
+    name: 'due_date',
+    responseKey: 'due_date',
+    outsideLabel: 'تاریخ سررسید',
+    col: 'col-md-3 col-12',
   },
 ]);
 
