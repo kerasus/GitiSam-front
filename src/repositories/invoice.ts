@@ -83,11 +83,15 @@ export default class InvoiceAPI extends BaseAPI<InvoiceType> {
   }
 
   async getTotalExpensesByCategory(): Promise<{
+    is_monthly_charge: boolean
+    category_id: number
     category_name: string
     total_paid_amount: number
     total_amount: number
   }[]> {
     const response: AxiosResponse<{
+      is_monthly_charge: boolean
+      category_id: number
       category_name: string
       total_paid_amount: number
       total_amount: number
