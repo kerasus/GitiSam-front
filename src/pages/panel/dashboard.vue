@@ -309,7 +309,7 @@ async function getTotalExpensesByCategory () {
   const totalExpensesByCategory = await invoiceAPI.getTotalExpensesByCategory()
   invoiceCategoryDate.value = totalExpensesByCategory.map(i=>{
     return {
-      value: i.total_paid_amount,
+      value: i.total_amount,
       name: i.category_name
     }
   })

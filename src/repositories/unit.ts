@@ -144,14 +144,24 @@ export default class UnitAPI extends BaseAPI<UnitType> {
     }
   }
 
-  async sendDebtSMS(unitId: number, targetGroup: 'resident' | 'owner', amount?: number): Promise<UnitType> {
+  async sendDebtSMS(
+    unitId: number,
+    targetGroup: 'resident' | 'owner',
+    amount?: number,
+    userId?: number
+  ): Promise<UnitType> {
     const params: {
+      userId: number | null,
       amount: number | null
     } = {
+      userId: null,
       amount: null
     }
     if (amount && !isNaN(amount)) {
       params.amount = amount
+    }
+    if (userId && !isNaN(userId)) {
+      params.userId = userId
     }
     const response: AxiosResponse<UnitType> = await this.getAxiosInstanceWithToken()
       .post(this.endpoints.sendDebtSMS(unitId, targetGroup), {}, { params });
@@ -182,10 +192,14 @@ export default class UnitAPI extends BaseAPI<UnitType> {
     }
   }
 
-  async detachUser(unitId: number, userId: number): Promise<{ message: string }> {
+  async detachUser(unitId: number, userId: number, role: 'resident' | 'owner'): Promise<{ message: string }> {
     try {
       const response: AxiosResponse<{ message: string }> = await this.getAxiosInstanceWithToken()
-        .delete(this.endpoints.detachUser(unitId, userId));
+        .delete(this.endpoints.detachUser(unitId, userId), {
+          params: {
+            role: role
+          }
+        });
       return response.data;
     } catch (error) {
       if (error instanceof Error) {

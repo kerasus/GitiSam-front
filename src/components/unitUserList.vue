@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { useUser } from 'src/stores/user';
-import { defineEmits, ref, type Ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { type UserType  } from 'src/repositories/user';
 import Confirmation from 'components/cards/confirmation.vue';
 import DeleteBtn from 'src/components/controls/deleteBtn.vue';
 import UnitAPI, { getUnitUserFullname } from 'src/repositories/unit';
+import FormBuilderSelectUser from 'src/components/controls/formBuilderCustomInput/FormBuilderSelectUser.vue'
 
 const props = defineProps<{
   unitId: number,
@@ -30,13 +31,13 @@ const showSMSDialog = ref(false);
 const confirmationMessage: Ref<string | null> = ref(null);
 const selectedUserToSendSMS = ref<number | null>(null);
 const loading = ref(false);
-const inputUserId = ref(null);
+const inputUserId = ref(undefined);
 
 async function detachUser(user: UserType) {
   try {
     loading.value = true;
     if (user.id) {
-      await unitAPI.detachUser(props.unitId, user.id)
+      await unitAPI.detachUser(props.unitId, user.id, props.userRole)
     }
   } finally {
     loading.value = false;
@@ -106,15 +107,15 @@ function onsubmitSendSMS() {
   if (confirmationType === 'auth') {
     sendAuthSMS(props.unitId, selectedUserToSendSMS.value)
   } else if (confirmationType === 'debt-owner' || confirmationType === 'debt-resident') {
-    sendDebtSMS(props.unitId)
+    sendDebtSMS(props.unitId, selectedUserToSendSMS.value)
   }
 }
 
-function sendDebtSMS (unitId: number) {
+function sendDebtSMS (unitId: number, userId: number) {
   sendSMSLoading.value = true;
   const targetGroup = confirmationType === 'debt-owner' ? 'owner' : 'resident';
   const amount = sendSMSWithAmount.value && debtAmountSMS.value && !isNaN(debtAmountSMS.value) ? debtAmountSMS.value : undefined
-  unitAPI.sendDebtSMS(unitId, targetGroup, amount)
+  unitAPI.sendDebtSMS(unitId, targetGroup, amount, userId)
     .then(() => {
       $q.notify({
         message: 'پیامک با موفقیت ارسال شد.',
@@ -156,31 +157,26 @@ function setConfirmationMessage (type: ConfirmationType) {
     <q-item>
       <q-item-section>
         <q-item-label>
-          <span v-if="userRole === 'resident'">
-            ساکنین
-          </span>
-          <span v-else-if="userRole === 'owner'">
-            مالکین
-          </span>
+          <div class="list-header">
+            <span class="list-header-title">
+              {{ userRole === 'resident' ?  'ساکنین' : 'مالکین'}}
+            </span>
+            <div v-if="userManager.isManager && editMode"
+                class="list-header-action">
+              <form-builder-select-user v-model:value="inputUserId"
+                                        :loading="loading"
+                                        label=" "
+                                        placeholder="کاربر" />
+                  <q-btn v-if="userManager.isManager"
+                        color="primary"
+                        flat
+                        icon="add"
+                        :loading="loading"
+                        @click="attachUser"
+                  />
+            </div>
+          </div>
         </q-item-label>
-      </q-item-section>
-      <q-item-section v-if="userManager.isManager && editMode"
-                      side>
-        <div>
-          <q-input v-model="inputUserId"
-                   :loading="loading"
-                    label="user_id">
-            <template #after>
-              <q-btn v-if="userManager.isManager"
-                     color="primary"
-                     flat
-                     icon="add"
-                     :loading="loading"
-                     @click="attachUser"
-              />
-            </template>
-          </q-input>
-        </div>
       </q-item-section>
     </q-item>
     <q-linear-progress v-if="loading"
@@ -275,6 +271,19 @@ function setConfirmationMessage (type: ConfirmationType) {
 
 <style scoped lang="scss">
 .unit-user-list {
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .list-header-title  {
+      margin-top: $space-2;
+      margin-right: $space-1;
+    }
+    .list-header-action {
+      display: flex;
+      align-items: center;
+    }
+  }
   .unit-user-item {
     .user-info-section {
       min-width: 200px;

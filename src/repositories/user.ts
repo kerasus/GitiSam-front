@@ -31,6 +31,15 @@ export type UserType = {
   updated_at: string | null;
 };
 
+export function getUserRoleLabel (roleName: string): string {
+  const targetRole = userRoleOptions.find((item)=>item.value === roleName)
+  if (targetRole) {
+    return targetRole.label
+  }
+
+  return roleName
+}
+
 export default class UserAPI extends BaseAPI<UserType> {
   constructor() {
     super('/users');
