@@ -112,6 +112,14 @@ const inputs = ref([
     placeholder: ' ',
     col: 'col-md-3 col-12',
   },
+  {
+    type: 'inputEditor',
+    name: 'description',
+    responseKey: 'description',
+    label: 'توضیحات',
+    placeholder: ' ',
+    col: 'col-md-12 col-12',
+  },
 ]);
 
 const resetPasswordApi = ref(userAPI.endpoints.resetPassword(userId.value));

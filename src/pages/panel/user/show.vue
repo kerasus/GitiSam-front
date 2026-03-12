@@ -18,14 +18,14 @@
     <div class="col-md-6 col-12">
       <q-card>
         <q-card-section>
-          <role-list :user="userData" :edit-mode="false" @change="onChangeUserRole" />
+          <user-unit-list :units="userData.units" />
         </q-card-section>
       </q-card>
     </div>
     <div class="col-md-6 col-12">
       <q-card>
         <q-card-section>
-          <user-unit-list :units="userData.units" />
+          <role-list :user="userData" :edit-mode="false" @change="onChangeUserRole" />
         </q-card-section>
       </q-card>
     </div>
@@ -101,6 +101,14 @@ const inputs = ref([
     label: 'ایمیل',
     placeholder: ' ',
     col: 'col-md-3 col-12',
+  },
+  {
+    type: 'inputEditor',
+    name: 'description',
+    responseKey: 'description',
+    label: 'توضیحات',
+    placeholder: ' ',
+    col: 'col-md-12 col-12',
   },
 ]);
 
