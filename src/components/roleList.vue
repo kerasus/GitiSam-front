@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineEmits, ref } from 'vue';
 import { useUser } from 'src/stores/user';
-import UserAPI, { type UserType, userRoleOptions, type RoleType } from 'src/repositories/user';
+import UserAPI, { type UserType, userRoleOptions, type RoleType, getUserRoleLabel } from 'src/repositories/user';
 import DeleteBtn from 'src/components/controls/deleteBtn.vue';
 
 const props = defineProps<{
@@ -87,7 +87,7 @@ async function removeRole(role: RoleType) {
               class="role-item"
       >
         <q-item-section>
-          <q-item-label>{{ role.name }}</q-item-label>
+          <q-item-label>{{ getUserRoleLabel(role.name ?? '') }}</q-item-label>
         </q-item-section>
         <q-item-section v-if="userManager.isManager"
                         side>
