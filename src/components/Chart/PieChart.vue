@@ -90,6 +90,6 @@ const option1 = ref({
 
 <style scoped lang="scss">
 .chart {
-  height: 200px;
+  height: 400px;
 }
 </style>

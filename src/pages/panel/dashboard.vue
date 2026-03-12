@@ -9,6 +9,12 @@
                            :number-unit="appConfigManager.currencyUnit"
                            :number="buildingData.current_balance"
                            show-status-color />
+        <q-skeleton v-if="!buildingData" height="150px" />
+        <dashboard-card v-else title="جمع کل هزینه های ساختمان" icon="receipt_long" :number="buildingData.total_debt" class="q-mt-md" />
+        <q-skeleton v-if="!buildingData" height="150px" />
+        <dashboard-card v-else title="جمع کل پرداختی های ساختمان" icon="payments" :number="buildingData.paid_amount" class="q-mt-md" />
+        <q-skeleton v-if="!buildingData" height="150px" />
+        <dashboard-card v-else title="تراز اولیه ساختمان" icon="account_balance" :number="buildingData.base_balance" class="q-mt-md" />
       </div>
       <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!smsAccountBalance" height="150px" />
@@ -18,46 +24,31 @@
                            number-unit="عدد پیامک"
                            :number="smsAccountBalance"
                            show-status-color />
-      </div>
-      <div class="col-md-3 col-xs-12">
-        <pie-chart v-if="invoiceCategoryDate.length > 0" title="هزینه ها"
-        :data="invoiceCategoryDate"/>
-      </div>
-      <div v-if="userManager.isManager" class="col-md-3 col-xs-12 flex justify-center items-center">
-        <q-card class="full-width">
+        <q-card v-if="userManager.isManager"
+                class="full-width q-mt-md">
           <q-card-section>
             اطلاع رسانی پیامکی بدهی به بدهکاران
           </q-card-section>
           <q-card-section class="text-center">
-            <q-btn color="primary" :loading="sendDebtSMSForOwnersLoading"
-                   @click="sendDebtSMSForOwners">
-              مالکین
-            </q-btn>
             <q-separator class="q-my-md" />
-            <q-btn color="primary" :loading="sendDebtSMSForResidentsLoading"
-                   @click="sendDebtSMSForResidents">
-              ساکنین
-            </q-btn>
+            <div class="flex justify-between">
+              <q-btn color="primary" :loading="sendDebtSMSForOwnersLoading"
+                     @click="sendDebtSMSForOwners">
+                مالکین
+              </q-btn>
+              <q-btn color="primary" :loading="sendDebtSMSForResidentsLoading"
+                     @click="sendDebtSMSForResidents">
+                ساکنین
+              </q-btn>
+            </div>
           </q-card-section>
         </q-card>
-      </div>
-    </div>
-    <div class="row q-col-gutter-md q-mt-md justify-center">
-      <div class="col-md-3 col-xs-6">
         <q-skeleton v-if="!buildingData" height="150px" />
-        <dashboard-card v-else title="تراز اولیه ساختمان" icon="account_balance" :number="buildingData.base_balance" />
+        <dashboard-card v-else title="درآمد ساختمان" icon="account_balance" :number="buildingData.total_income" class="q-mt-md" />
       </div>
-      <div class="col-md-3 col-xs-6">
-        <q-skeleton v-if="!buildingData" height="150px" />
-        <dashboard-card v-else title="درآمد ساختمان" icon="account_balance" :number="buildingData.total_income" />
-      </div>
-      <div class="col-md-3 col-xs-6">
-        <q-skeleton v-if="!buildingData" height="150px" />
-        <dashboard-card v-else title="جمع کل هزینه های ساختمان" icon="receipt_long" :number="buildingData.total_debt" />
-      </div>
-      <div class="col-md-3 col-xs-6">
-        <q-skeleton v-if="!buildingData" height="150px" />
-        <dashboard-card v-else title="جمع کل پرداختی های ساختمان" icon="payments" :number="buildingData.paid_amount" />
+      <div class="col-md-6 col-xs-12">
+        <pie-chart v-if="invoiceCategoryDate.length > 0" title="هزینه ها"
+        :data="invoiceCategoryDate"/>
       </div>
     </div>
   </div>
