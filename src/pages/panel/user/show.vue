@@ -13,11 +13,23 @@
     :after-load-input-data="afterLoadInputData"
   />
   <q-separator class="q-my-md" />
-  <q-card>
-    <q-card-section>
-      <role-list v-if="userData" :user="userData" :edit-mode="false" @change="onChangeUserRole" />
-    </q-card-section>
-  </q-card>
+  <div v-if="userData"
+       class="row q-col-gutter-md">
+    <div class="col-md-6 col-12">
+      <q-card>
+        <q-card-section>
+          <role-list :user="userData" :edit-mode="false" @change="onChangeUserRole" />
+        </q-card-section>
+      </q-card>
+    </div>
+    <div class="col-md-6 col-12">
+      <q-card>
+        <q-card-section>
+          <user-unit-list :units="userData.units" />
+        </q-card-section>
+      </q-card>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -25,6 +37,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { EntityShow } from 'quasar-crud';
 import RoleList from 'src/components/roleList.vue';
+import UserUnitList from 'src/components/userUnitList.vue';
 import UserAPI, { type UserType } from 'src/repositories/user';
 
 const route = useRoute();

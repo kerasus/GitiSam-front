@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { EntityIndex } from 'quasar-crud';
-import UserAPI from 'src/repositories/user';
+import UserAPI, { getUserRoleLabel } from 'src/repositories/user';
 import { useDate } from 'src/composables/Date';
 
 const userAPI = new UserAPI();
@@ -68,18 +68,25 @@ const table = ref({
       field: (row: any) => row.lastname,
     },
     {
-      name: 'username',
-      required: true,
-      label: 'نام کاربری',
-      align: 'left',
-      field: (row: any) => row.username,
-    },
-    {
       name: 'mobile',
       required: true,
       label: 'موبایل',
       align: 'left',
       field: (row: any) => row.mobile,
+    },
+    {
+      name: 'roles_list',
+      required: true,
+      label: 'نقش ها',
+      align: 'left',
+      field: (row: any) => row.roles_list.map((i: string)=>getUserRoleLabel(i)).join(','),
+    },
+    {
+      name: 'username',
+      required: true,
+      label: 'نام کاربری',
+      align: 'left',
+      field: (row: any) => row.username,
     },
     {
       name: 'email',

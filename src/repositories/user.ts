@@ -1,5 +1,6 @@
 import BaseAPI from './BaseAPI';
 import type { AxiosResponse } from 'axios';
+import type { UnitType } from './unit';
 
 export const userRoleOptions = [
   { label: 'مدیر', value: 'Manager' },
@@ -25,6 +26,7 @@ export type UserType = {
   mobile: string | null;
   roles_list: string[];
   roles: RoleType[];
+  units: UnitType[];
   email_verified_at: string | null;
   mobile_verified_at: string | null;
   created_at: string | null;
@@ -32,7 +34,14 @@ export type UserType = {
 };
 
 export function getUserRoleLabel (roleName: string): string {
-  const targetRole = userRoleOptions.find((item)=>item.value === roleName)
+  const capitalize = (str: string): string => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  const normalizedRoleName = capitalize(roleName);
+
+  const targetRole = userRoleOptions.find((item)=>item.value === normalizedRoleName)
   if (targetRole) {
     return targetRole.label
   }
@@ -50,6 +59,7 @@ export default class UserAPI extends BaseAPI<UserType> {
       email: null,
       username: null,
       mobile: null,
+      units: [],
       roles: [],
       roles_list: [],
       email_verified_at: null,

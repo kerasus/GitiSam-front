@@ -29,6 +29,13 @@ export type UnitType = {
   owners: UserType[];
   residents: UserType[];
   description: string | null;
+  pivot?: {
+    unit_id: number;
+    user_id: number;
+    role: string;
+    created_at: string;
+    updated_at: string;
+  };
   created_at: string | null;
   updated_at: string | null;
 };
