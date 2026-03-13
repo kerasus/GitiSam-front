@@ -32,11 +32,15 @@
           <q-card-section class="text-center">
             <q-separator class="q-my-md" />
             <div class="flex justify-between">
-              <q-btn color="primary" :loading="sendDebtSMSForOwnersLoading"
+              <q-btn color="primary"
+                     :loading="sendDebtSMSForOwnersLoading"
+                     class="q-mt-md"
                      @click="sendDebtSMSForOwners">
                 مالکین
               </q-btn>
-              <q-btn color="primary" :loading="sendDebtSMSForResidentsLoading"
+              <q-btn color="primary"
+                     :loading="sendDebtSMSForResidentsLoading"
+                     class="q-mt-md"
                      @click="sendDebtSMSForResidents">
                 ساکنین
               </q-btn>

@@ -106,10 +106,10 @@ async function main() {
     const remoteArchivePath = path.posix.join(REMOTE_PATH, 'spa.zip');
     await uploadFile(client, ARCHIVE_PATH, remoteArchivePath);
 
+    console.log('Upload completed successfully.');
+
     // Call the function at the end of your publish process
     await triggerDeployment();
-
-    console.log('Upload and extraction completed successfully.');
   } catch (error) {
     console.error('Error during process:', error.message);
   } finally {
