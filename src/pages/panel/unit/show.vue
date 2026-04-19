@@ -104,6 +104,45 @@
         </template>
       </entity-index>
     </q-tab-panel>
+    <q-tab-panel name="monthlyReport">
+      <entity-index :value="invoiceIndexInputs"
+                    :title="invoiceIndexLabel"
+                    :api="invoiceIndexApi"
+                    :table="invoiceIndexTable"
+                    :table-keys="invoiceIndexTableKeys"
+                    :show-route-name="showRouteName"
+                    :show-create="false"
+                    :show-close-button="false"
+                    :show-expand-button="false"
+                    :show-reload-button="false"
+                    :show-search-button="true"
+                    :row-key="invoiceIndexItemIdentifyKey"
+      >
+        <template #entity-index-table-cell="{ inputData }">
+          <template v-if="inputData.col.name === 'amount'">
+            <currency-number :number="inputData.props.row.amount" />
+          </template>
+          <template v-else-if="inputData.col.name === 'status_label'">
+        <span :class="{'text-green': inputData.props.row.status === 'paid', 'text-red': inputData.props.row.status === 'unpaid'}">
+          {{ inputData.props.row.status_label }}
+        </span>
+          </template>
+          <template v-else-if="inputData.col.name === 'is_covered_by_monthly_charge'">
+        <span :class="{'text-green': inputData.props.row.invoice?.is_covered_by_monthly_charge, 'text-red': !inputData.props.row.invoice?.is_covered_by_monthly_charge}">
+          <template v-if="inputData.props.row.invoice?.is_covered_by_monthly_charge">
+            بله
+          </template>
+          <template v-else>
+            خیر
+          </template>
+        </span>
+          </template>
+          <template v-else>
+            {{ inputData.col.value }}
+          </template>
+        </template>
+      </entity-index>
+    </q-tab-panel>
     <q-tab-panel name="transactions">
       <entity-index
         :value="transactionIndexInputs"
@@ -155,10 +194,10 @@
 import { useQuasar } from 'quasar';
 import { useRoute } from 'vue-router';
 import { useUser } from 'src/stores/user';
+import { EntityIndex } from 'quasar-crud';
 import { useDate } from 'src/composables/Date';
 import { computed, onMounted, ref } from 'vue';
 import { useAppConfig } from 'stores/appConfig';
-import { EntityIndex } from 'quasar-crud';
 import { useBuildingStore } from 'src/stores/building';
 import { FormBuilderAssist } from 'quasar-form-builder';
 import UnitUserList from 'src/components/unitUserList.vue';
@@ -173,8 +212,9 @@ import {
   transactionStatusOptions,
   transactionPaymentMethodOptions
 } from 'src/repositories/transaction';
-import {
-  invoiceTargetGroupOptions
+import InvoiceAPI, {
+  invoiceTargetGroupOptions,
+  type InvoiceType
 } from 'src/repositories/invoice';
 import InvoiceDistributionAPI, {
   type InvoiceDistributionType,
@@ -187,6 +227,7 @@ const userManager = useUser();
 const dateManager = useDate();
 const unitAPI = new UnitAPI();
 const appConfig = useAppConfig();
+const invoiceAPI = new InvoiceAPI();
 const buildingStore = useBuildingStore();
 const transactionAPI = new TransactionAPI();
 const invoiceCategoryAPI = new InvoiceCategoryAPI();
@@ -356,6 +397,117 @@ const invoiceDistributionIndexInputs = ref([
   }
 ]);
 
+const invoiceIndexApi = ref(invoiceAPI.endpoints.base);
+const invoiceIndexLabel = ref('مصارف شارژ ماهیانه');
+const invoiceIndexItemIdentifyKey = ref('id');
+const invoiceIndexTableKeys = ref({
+  data: 'data',
+  total: 'total',
+  currentPage: 'current_page',
+  perPage: 'per_page',
+  pageKey: 'page',
+});
+const invoiceIndexTable = ref({
+  columns: [
+    {
+      name: 'invoiceTitle',
+      required: true,
+      label: 'عنوان فاکتور',
+      align: 'left',
+      field: (row: InvoiceType) => row.title,
+    },
+    {
+      name: 'invoice_category',
+      required: true,
+      label: 'دسته فاکتور',
+      align: 'left',
+      field: (row: InvoiceType) => row.invoice_category?.name,
+    },
+    {
+      name: 'target_group',
+      required: true,
+      label: 'پرداخت کننده',
+      align: 'left',
+      field: (row: InvoiceType) => row.target_group_label,
+    },
+    {
+      name: 'amount',
+      required: true,
+      label: `مبلغ کل فاکتور (${appConfig.currencyUnit})`,
+      align: 'left',
+      field: (row: InvoiceType) => row.amount,
+    },
+    {
+      name: 'is_covered_by_monthly_charge',
+      required: true,
+      label: 'تحت پوشش شارژ ماهیانه',
+      align: 'left',
+      field: (row: InvoiceType) => row.is_covered_by_monthly_charge,
+    },
+    {
+      name: 'created_at',
+      required: true,
+      label: 'زمان ایجاد',
+      align: 'left',
+      field: (row: InvoiceType) =>
+        row.created_at
+          ? dateManager.miladiToShamsi(
+            row.created_at,
+            'YYYY-MM-DDThh:mm:ss',
+            'hh:mm:ss jYYYY/jMM/jDD',
+          )
+          : '-',
+    }
+  ],
+});
+const invoiceIndexInputs = ref([
+  {
+    type: 'hidden',
+    name: 'sortation_field',
+    value: 'created_at'
+  },
+  {
+    type: 'hidden',
+    name: 'sortation_order',
+    value: 'desc'
+  },
+  // {
+  //   type: 'hidden',
+  //   name: 'is_covered_by_monthly_charge',
+  //   value: true
+  // },
+  {
+    type: 'hidden',
+    name: 'unit_id',
+    value: unitId.value
+  },
+  {
+    type: 'input',
+    name: 'title',
+    label: 'عنوان فاکتور',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'select',
+    name: 'invoice_category_id',
+    label: 'دسته فاکتور',
+    options: [],
+    optionLabel: 'name',
+    optionValue: 'id',
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  },
+  {
+    type: 'select',
+    name: 'target_group',
+    responseKey: 'invoiceTargetGroup',
+    label: 'پرداخت کننده',
+    options: invoiceTargetGroupOptions,
+    placeholder: ' ',
+    col: 'col-md-3 col-12',
+  }
+]);
 
 const transactionIndexApi = ref(transactionAPI.endpoints.base);
 const transactionIndexLabel = ref('پرداخت های واحد');
@@ -397,6 +549,20 @@ const transactionIndexTable = ref({
       label: 'وضعیت تراکنش',
       align: 'left',
       field: (row: TransactionType) => row.transaction_status_label,
+    },
+    {
+      name: 'created_at',
+      required: true,
+      label: 'زمان ایجاد',
+      align: 'left',
+      field: (row: TransactionType) =>
+        row.created_at
+          ? dateManager.miladiToShamsi(
+            row.created_at,
+            'YYYY-MM-DDThh:mm:ss',
+            'hh:mm:ss jYYYY/jMM/jDD',
+          )
+          : '-',
     },
     {
       name: 'paid_at',

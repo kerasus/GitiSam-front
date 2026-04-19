@@ -273,7 +273,7 @@ $q-field__label_margin_bottom: $space-1;
   &.q-field--disabled {
     .q-field__inner {
       .q-field__control {
-        $field-disabled-input-color: $grey-4;
+        $field-disabled-input-color: $grey-6;
         &::before {
           background: $field-disabled-background;
           border: $disbaled-border-style;
@@ -311,7 +311,7 @@ $q-field__label_margin_bottom: $space-1;
   &.q-field--readonly {
     .q-field__inner {
       .q-field__control {
-        $field-disabled-input-color: $light-disable;
+        $field-disabled-input-color: $grey-6;
         &::before {
           background: $field-disabled-background;
         }

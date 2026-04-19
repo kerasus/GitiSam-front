@@ -19,9 +19,20 @@
                                              label="پرداخت مبلغ دلخواه"
                                              has-submit
                                              :submit-loading="redirectToPaymentGatewayLoading"
+                                             :show-value-in-words="false"
                                              submit-title="پرداخت"
                                              class="q-mb-md full-width"
                                              @submit="redirectToPaymentGateway" />
+                <div class="targetAmountInWordWrapper text-bold text-info col-12">
+                  <div class="targetAmountInWord_rial">
+                    {{ rialInWords }}
+                    ریال
+                  </div>
+                  <div class="targetAmountInWord_toman">
+                    {{ tomanInWords }}
+                    تومان
+                  </div>
+                </div>
               </div>
             </div>
           </q-banner>
@@ -177,7 +188,7 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useUser } from 'src/stores/user';
 import { EntityIndex } from 'quasar-crud';
 import { useDate } from 'src/composables/Date';
@@ -185,8 +196,8 @@ import { useAppConfig } from 'src/stores/appConfig';
 import { FormBuilderAssist } from 'quasar-form-builder';
 import CurrencyNumber from 'src/components/CurrencyNumber.vue';
 import UnitAPI, { type UnitType } from 'src/repositories/unit';
-import UnitProfileTabHeader from 'src/components/UnitProfileTabHeader.vue';
 import InvoiceAPI, { type InvoiceType } from 'src/repositories/invoice';
+import UnitProfileTabHeader from 'src/components/UnitProfileTabHeader.vue';
 import InvoiceCategoryAPI, { type InvoiceCategoryType } from 'src/repositories/invoiceCategory';
 import FormBuilderCurrencyInput from 'src/components/controls/formBuilderCustomInput/FormBuilderCurrencyInput.vue';
 import TransactionAPI, {
@@ -200,21 +211,27 @@ import InvoiceDistributionAPI, {
   invoiceDistributionMethodOptions,
 } from 'src/repositories/invoiceDistribution';
 import { invoiceTargetGroupOptions } from 'src/repositories/invoice';
+import { useNumberToPersianWord } from 'src/composables/useNumberToPersianWord';
 
 const $q = useQuasar();
 const userManager = useUser();
 const dateManager = useDate();
 const appConfig = useAppConfig();
 const unitAPI = new UnitAPI();
-const transactionAPI = new TransactionAPI();
 const invoiceAPI = new InvoiceAPI();
+const transactionAPI = new TransactionAPI();
 const invoiceCategoryAPI = new InvoiceCategoryAPI();
 const invoiceDistributionAPI = new InvoiceDistributionAPI();
+const {
+  getNumberToPersianWord
+} = useNumberToPersianWord()
 
 const transactionTargetGroup = ref<'resident' | 'owner'>('resident');
 const tab = ref<'actions' | 'invoices' | 'transactions'>('actions');
 const unitId = ref<number | null>(null);
 const paymentValue = ref<number>(0);
+const rialInWords = ref<string>('');
+const tomanInWords = ref<string>('');
 
 const invoiceCategories = ref<InvoiceCategoryType[]>([]);
 const showRouteName = ref('Panel.Unit.Show');
@@ -225,7 +242,7 @@ const unitLoading = ref(false);
 const redirectToPaymentGatewayLoading = ref(false);
 
 const invoiceDistributionIndexApi = ref(invoiceDistributionAPI.endpoints.base);
-const invoiceDistributionIndexLabel = ref('توزیع فاکتورها');
+const invoiceDistributionIndexLabel = ref('هزینه‌ها و بدهی‌ها');
 const invoiceDistributionIndexShowRouteName = ref('Panel.InvoiceDistribution.Show');
 const invoiceDistributionIndexItemIdentifyKey = ref('id');
 const invoiceDistributionIndexTableKeys = ref({
@@ -377,7 +394,7 @@ const invoiceDistributionIndexInputs = ref([
 ]);
 
 const invoiceIndexApi = ref(invoiceAPI.endpoints.base);
-const invoiceIndexLabel = ref('فاکتورها');
+const invoiceIndexLabel = ref('مصارف شارژ ماهیانه');
 const invoiceIndexItemIdentifyKey = ref('id');
 const invoiceIndexTableKeys = ref({
   data: 'data',
@@ -529,6 +546,20 @@ const unitTransactionsIndexTable = ref({
       field: (row: TransactionType) => row.transaction_status_label,
     },
     {
+      name: 'created_at',
+      required: true,
+      label: 'زمان ایجاد',
+      align: 'left',
+      field: (row: TransactionType) =>
+        row.created_at
+          ? dateManager.miladiToShamsi(
+            row.created_at,
+            'YYYY-MM-DDThh:mm:ss',
+            'hh:mm:ss jYYYY/jMM/jDD',
+          )
+          : '-',
+    },
+    {
       name: 'paid_at',
       required: true,
       label: 'زمان پرداخت',
@@ -611,8 +642,7 @@ async function updateBalance() {
   }
 }
 
-async function redirectToPaymentGateway() {
-
+function redirectToPaymentGateway() {
   try {
     if (!paymentValue.value || !userManager.me || !unitId.value) {
       $q.notify({
@@ -622,34 +652,41 @@ async function redirectToPaymentGateway() {
       return;
     }
     redirectToPaymentGatewayLoading.value = true;
-    const redirectResponse = await transactionAPI.redirectToGateway({
-      user_id: userManager.me?.id,
-      unit_id: unitId.value,
-      target_group: transactionTargetGroup.value,
-      amount: paymentValue.value,
-      description: 'پرداخت بدهی واحد'
-    });
+
+    const apiServer = process.env.FRONTEND_API_BASE || '/api';
+    window.location.href = apiServer + unitAPI.endpoints.redirectToGatewayDirect(
+      unitId.value,
+      transactionTargetGroup.value,
+      paymentValue.value
+    );
     $q.notify({
       message: 'در حال انتقال به درگاه پرداخت ...',
       type: 'positive'
     });
-
-    // window.location.href = redirectUrl; // for zarinpal
-
-    // Create a temporary div to hold the HTML form
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = redirectResponse;
-
-    // Append the temporary div to the body
-    document.body.appendChild(tempDiv);
-
-    // Automatically submit the form
-    const form = tempDiv.querySelector('form');
-    if (form) {
-      form.submit();
-    } else {
-      throw new Error('فرم پرداخت در پاسخ دریافتی وجود ندارد.');
-    }
+    // const redirectResponse = await transactionAPI.redirectToGateway({
+    //   user_id: userManager.me?.id,
+    //   unit_id: unitId.value,
+    //   target_group: transactionTargetGroup.value,
+    //   amount: paymentValue.value,
+    //   description: 'پرداخت بدهی واحد'
+    // });
+    //
+    // // window.location.href = redirectUrl; // for zarinpal
+    //
+    // // Create a temporary div to hold the HTML form
+    // const tempDiv = document.createElement('div');
+    // tempDiv.innerHTML = redirectResponse;
+    //
+    // // Append the temporary div to the body
+    // document.body.appendChild(tempDiv);
+    //
+    // // Automatically submit the form
+    // const form = tempDiv.querySelector('form');
+    // if (form) {
+    //   form.submit();
+    // } else {
+    //   throw new Error('فرم پرداخت در پاسخ دریافتی وجود ندارد.');
+    // }
   }  catch (error) {
     // Handle errors and notify the user
     console.error('Error redirecting to payment gateway:', error);
@@ -722,6 +759,11 @@ async function loadUnitData () {
   }
   unitData.value = await unitAPI.get(unitId.value)
 }
+
+watch(paymentValue,() => {
+  rialInWords.value = getNumberToPersianWord(paymentValue.value)
+  tomanInWords.value = getNumberToPersianWord(Math.floor(paymentValue.value / 10))
+})
 
 onMounted(async ()=>{
   await getMyUnits()

@@ -99,11 +99,11 @@ const tabs = ref([
   },
   {
     name: 'invoices',
-    label: 'فاکتورها',
+    label: 'هزینه‌ها و بدهی‌ها',
   },
   {
     name: 'monthlyReport',
-    label: 'ریز هزینه های شارژ',
+    label: 'مصارف شارژ ماهیانه',
   },
   {
     name: 'transactions',

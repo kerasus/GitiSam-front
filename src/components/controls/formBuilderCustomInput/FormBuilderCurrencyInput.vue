@@ -1,5 +1,5 @@
 <template>
-  <div class="form-builder-input" :class="customClass">
+  <div class="form-builder-currency-input" :class="customClass">
     <div class="outsideLabel">{{ placeholder ? label : null }}</div>
     <q-input
       ref="input"
@@ -13,7 +13,7 @@
       :error-message="errorMessage"
       :disable="disable"
       :mask="mask"
-      :hint="valueInWords"
+      :hint="showValueInWords ? valueInWords : undefined"
       :fill-mask="fillMask"
       :reverse-fill-mask="reverseFillMask"
       :clearable="clearable"
@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 import { useAppConfig } from 'src/stores/appConfig'
-import NumberToPersianWord from 'number_to_persian_word'
 import { computed, defineProps, defineEmits, ref, watch } from 'vue';
+import { useNumberToPersianWord } from 'src/composables/useNumberToPersianWord';
 
 defineOptions({
   name: 'FormBuilderCurrencyInput',
@@ -63,6 +63,10 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '',
+  },
+  showValueInWords: {
+    type: Boolean,
+    default: true,
   },
   filled: {
     type: Boolean,
@@ -148,6 +152,12 @@ const props = defineProps({
 
 const emits = defineEmits(['update:value', 'input', 'click', 'keydown', 'keypress', 'submit']);
 
+const {
+  toEnDigit,
+  sanitizeInput,
+  getNumberToPersianWord
+} = useNumberToPersianWord()
+
 const appConfig = useAppConfig()
 const rawValue = ref<string | number>(props.value);
 
@@ -166,51 +176,9 @@ const formattedValue = computed({
 });
 // Convert numbers to Persian words
 const valueInWords = computed(() => {
-  const rawValueInNumber =
-    typeof rawValue.value === 'number'
-      ? rawValue.value
-      : parseInt(toEnDigit(rawValue.value.toString()));
-  const isNegative = rawValueInNumber < 0;
-  const absoluteValue = Math.abs(rawValueInNumber);
-  const words = NumberToPersianWord.convert(absoluteValue);
-
-  return `${isNegative ? 'منفی ' : ''}${words} ${appConfig.currencyUnit}`;
+  const numberToPersianWord = getNumberToPersianWord(rawValue.value)
+  return `${numberToPersianWord} ${appConfig.currencyUnit}`;
 });
-
-/**
- * تبدیل اعداد فارسی به انگلیسی
- */
-function toEnDigit(value: string): string {
-  if (!value) return '';
-  const digits = [
-    { from: '۰', to: '0' },
-    { from: '۱', to: '1' },
-    { from: '۲', to: '2' },
-    { from: '۳', to: '3' },
-    { from: '۴', to: '4' },
-    { from: '۵', to: '5' },
-    { from: '۶', to: '6' },
-    { from: '۷', to: '7' },
-    { from: '۸', to: '8' },
-    { from: '۹', to: '9' },
-  ];
-  let result = normalizeMinus(value).toString();
-  digits.forEach((item) => {
-    result = result.replace(new RegExp(item.from, 'g'), item.to);
-  });
-  return result;
-}
-
-function normalizeMinus (input: string): string {
-  return input.replace(/‎-/g, '-').replace(/−/g, '-');
-}
-
-/**
- * تمیز کردن ورودی (حذف کاماها و تبدیل اعداد فارسی)
- */
-function sanitizeInput(value: string): string {
-  return toEnDigit(normalizeMinus(value).replace(/٬/g, ''));
-}
 
 /**
  * مدیریت رویداد ورودی
@@ -253,9 +221,9 @@ watch(() => props.value, (value) => {
 
 <style scoped lang="scss">
 .form-builder-currency-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  //display: flex;
+  //flex-direction: column;
+  //gap: 8px;
 }
 
 .outsideLabel {

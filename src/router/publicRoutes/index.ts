@@ -16,7 +16,7 @@ export const index: RouteRecordRaw[] = [
     component: () => import('src/pages/IndexPage.vue'),
   },
   {
-    path: 'public/unit/:unit_id',
+    path: 'public/units/:unit_id',
     name: 'PublicUnitBoard',
     meta: {
       layoutConfig: {
@@ -28,6 +28,20 @@ export const index: RouteRecordRaw[] = [
       },
     },
     component: () => import('src/pages/public/unit.vue'),
+  },
+  {
+    path: 'public/units/:unit_id/pay-debt/:target_group',
+    name: 'PublicUnitPayDebt',
+    meta: {
+      layoutConfig: {
+        layoutHeaderType: 'paymentResult',
+        layoutHeader: true,
+        layoutLeftDrawer: false,
+        layoutRightDrawer: false,
+        layoutFooter: false,
+      },
+    },
+    component: () => import('src/pages/public/unitPayDebt.vue'),
   },
   {
     path: 'payment-result',

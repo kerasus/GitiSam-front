@@ -25,7 +25,7 @@ export interface ErrorResponse {
   errors: ValidationError;
 }
 
-const apiServer = process.env.APP_API || '/api';
+const apiServer = process.env.FRONTEND_API_BASE || '/api';
 export const ServerMessagesPrefix = 'dynamicI18nMessages';
 export const tokenDataKeyInLocalstorage = 'tokenData';
 

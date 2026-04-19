@@ -12,7 +12,17 @@
     :show-expand-button="false"
     :show-index-button="false"
     :show-edit-button="false"
-  />
+  >
+    <template #before-form-builder>
+      <div class="banner"
+      :class="{'success': transactionStatus === true, 'error': transactionStatus === false}">
+        وضعیت تراکنش:
+        <span class="text-bold">
+          ({{ transactionStatusLabel }})
+        </span>
+      </div>
+    </template>
+  </entity-show>
 </template>
 
 <script setup lang="ts">
@@ -34,6 +44,30 @@ const FormBuilderCurrencyInputComponent = shallowRef(FormBuilderCurrencyInput);
 const transactionId = computed(() => {
   const id = route.query.transaction_id;
   return id ? parseInt(id.toString()) : 0;
+});
+
+const transactionStatus = computed(() => {
+  if (transactionData.value) {
+    return transactionData.value.transaction_status === 'paid'
+  }
+  return route.query.status === 'success'
+});
+
+const transactionStatusLabel = computed(() => {
+  if (transactionData.value) {
+    const target = transactionStatusOptions.find(item => item.value === transactionData.value?.transaction_status)
+    if (target) {
+      return target.label
+    }
+  }
+  const status = route.query.status;
+  if (status === 'success') {
+    return 'موفق'
+  } else if (status === 'failed') {
+    return 'نا موفق'
+  }
+
+  return 'نا موفق'
 });
 
 // Define labels and routes
@@ -104,3 +138,18 @@ onMounted(async () => {
   await loadTransactionData();
 })
 </script>
+
+<style scoped lang="scss">
+.banner {
+  border-radius: 1rem;
+  color: white;
+  padding: 1rem 2rem;
+  background-color: $info;
+  &.success {
+    background-color: $success;
+  }
+  &.error {
+    background-color: $error;
+  }
+}
+</style>

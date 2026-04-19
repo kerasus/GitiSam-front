@@ -101,7 +101,8 @@ export default class UnitAPI extends BaseAPI<UnitType> {
       getBalance: (unitId: number) => `${this.baseEndpoint}/${unitId}/get_balance`,
       updateBalance: (unitId: number) => `${this.baseEndpoint}/${unitId}/update_balance`,
       attachUser: (unitId: number) => `${this.baseEndpoint}/${unitId}/attach-user`,
-      detachUser: (unitId: number, userId: number) => `${this.baseEndpoint}/${unitId}/detach-user/${userId}`
+      detachUser: (unitId: number, userId: number) => `${this.baseEndpoint}/${unitId}/detach-user/${userId}`,
+      redirectToGatewayDirect : (unitId: number, targetGroup: 'resident' | 'owner', amount: number) => `${this.baseEndpoint}/${unitId}/pay-debt/${targetGroup}?amount=${amount}`
     }
   }
 
