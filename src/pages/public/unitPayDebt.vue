@@ -7,7 +7,7 @@
         </template>
         <div v-else
              class="row">
-          <template v-if="targetAmount > 0">
+          <template v-if="unitDebtAmount > 0">
             <div class="col-12">
               پرداخت مبلغ
             </div>
@@ -60,13 +60,20 @@
           </div>
         </div>
       </div>
-      <div v-if="unitData && targetAmount > 0">
+      <div v-if="unitData && targetAmount >= minimumPaymentAmount">
         <q-btn color="primary"
                size="lg"
                class="q-mt-md full-width"
                 @click="redirectToGatewayDirect">
           پرداخت
         </q-btn>
+      </div>
+      <div v-else-if="targetAmount < minimumPaymentAmount">
+        <q-banner class="bg-warning text-white q-mt-md">
+          حداقل مبلغ برای پرداخت
+          {{ getNumberToPersianWord(minimumPaymentAmount) }}
+          ریال است
+        </q-banner>
       </div>
     </q-card-section>
   </q-card>
@@ -89,7 +96,9 @@ const {
 const route = useRoute();
 const unitAPI = new UnitAPI();
 
+const minimumPaymentAmount = ref<number>(1000000);
 const targetAmount = ref<number>(0);
+const unitDebtAmount = ref<number>(0);
 const rialInWords = ref<string>('');
 const tomanInWords = ref<string>('');
 const unitData = ref<null | UnitType>(null)
@@ -125,12 +134,13 @@ async function loadUnitBalance () {
   try {
     loadUnitBalanceLoading.value = true;
     unitData.value = await unitAPI.getBalance(unitId.value)
-    targetAmount.value = 0
+    unitDebtAmount.value = 0
     if (targetGroup.value === 'resident') {
-      targetAmount.value = unitData.value.current_resident_balance ? unitData.value.current_resident_balance * -1 : 0
+      unitDebtAmount.value = unitData.value.current_resident_balance ? unitData.value.current_resident_balance * -1 : 0
     } else if (targetGroup.value === 'owner') {
-      targetAmount.value = unitData.value.current_owner_balance ? unitData.value.current_owner_balance * -1 : 0
+      unitDebtAmount.value = unitData.value.current_owner_balance ? unitData.value.current_owner_balance * -1 : 0
     }
+    targetAmount.value = unitDebtAmount.value
   } finally {
     loadUnitBalanceLoading.value = false;
   }
