@@ -148,7 +148,7 @@ function logout() {
   //background: $gray-100;
   background: transparent;
   min-height: $header-height;
-  padding: $space-4 $space-4 $space-4 $space-10;
+  padding: $space-2;
   .main-dashboard {
     border-radius: 1rem;
     padding: $space-3 $space-4 $space-3 $space-16;

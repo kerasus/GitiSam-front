@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
         layoutLeftDrawerMiniToOverlay: false,
         layoutLeftDrawerWidth: 237,
         layoutLeftDrawerMiniWidth: 72,
-        layoutLeftDrawerBehavior: 'desktop',
+        layoutLeftDrawerBehavior: 'default',
         layoutRightDrawer: true,
         layoutRightDrawerType: 'mainPanel',
         layoutRightDrawerElevated: true,
