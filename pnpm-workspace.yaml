@@ -1,0 +1,5 @@
+allowBuilds:
+  core-js: true
+  cpu-features: true
+  esbuild: true
+  ssh2: true
