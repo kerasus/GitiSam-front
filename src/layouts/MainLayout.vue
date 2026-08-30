@@ -182,7 +182,6 @@ onUnmounted(() => {
       }
     }
     .q-drawer--left {
-      z-index: 2001;
       .q-layout__shadow {
         &:after {
           box-shadow:

@@ -263,7 +263,7 @@ watch(currentRouteName, () => {
     .left-drawer__copyright-section {
       padding-left: $space-4;
       color: #67748e;
-      font-size: 12px;
+      font-size: 11px;
       direction: rtl;
       text-align: left;
       .app-version {
